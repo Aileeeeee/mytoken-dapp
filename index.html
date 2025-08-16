@@ -2432,8 +2432,8 @@
             }
         }
 
-        // Grant admin role - FIXED VERSION
-        async function grantAdminRole(addressParam = null) {
+        // Simple Grant admin role function
+        async function grantAdminRole() {
             try {
                 if (!contract || !userAccount) {
                     showStatus('❌ Please connect your wallet first', 'error');
@@ -2445,87 +2445,45 @@
                     return;
                 }
 
-                // Get address from parameter or input field
-                let address = addressParam || document.getElementById('adminAddress').value.trim();
-                const fromUI = !addressParam; // Track if called from UI
-                
-                if (!address) {
+                // Get address from input field
+                const inputAddress = document.getElementById('adminAddress').value.trim();
+        
+                if (!inputAddress) {
                     showStatus('❌ Please enter an address', 'error');
                     return;
                 }
 
-                // Convert to checksum address and validate
-                try {
-                    address = web3.utils.toChecksumAddress(address);
-                } catch (e) {
-                    showStatus('❌ Invalid address format. Must be a valid Ethereum address', 'error');
-                    return;
-                }
-
-                // Additional validation
-                if (!web3.utils.isAddress(address)) {
-                    showStatus('❌ Invalid address format', 'error');
-                    return;
-                }
-
-                showStatus('🔄 Verifying address and permissions...', 'info');
-                
-                const DEFAULT_ADMIN_ROLE = await contract.methods.DEFAULT_ADMIN_ROLE().call();
-                
-                // Check if already an admin
-                const isAlreadyAdmin = await contract.methods.hasRole(DEFAULT_ADMIN_ROLE, address).call();
-                if (isAlreadyAdmin) {
-                    showStatus('⚠️ This address is already an admin', 'warning');
+                // Simple address validation - just check if it starts with 0x and has correct length
+                if (!inputAddress.startsWith('0x') || inputAddress.length !== 42) {
+                    showStatus('❌ Invalid address format. Must be 42 characters starting with 0x', 'error');
                     return;
                 }
 
                 showStatus('👑 Granting admin role... Please confirm in MetaMask', 'info');
 
-                // First estimate gas
-                let gasEstimate;
-                try {
-                    gasEstimate = await contract.methods.grantRole(DEFAULT_ADMIN_ROLE, address).estimateGas({
-                        from: userAccount
-                    });
-                } catch (estimateError) {
-                    console.error('Gas estimate error:', estimateError);
-                    showStatus('❌ Transaction would fail. Check if address is valid and you have permissions.', 'error');
-                    return;
-                }
+                const DEFAULT_ADMIN_ROLE = await contract.methods.DEFAULT_ADMIN_ROLE().call();
 
-                // Then send the transaction
-                const result = await contract.methods.grantRole(DEFAULT_ADMIN_ROLE, address).send({
-                    from: userAccount,
-                    gas: Math.floor(gasEstimate * 1.2) // 20% buffer
+                // Send transaction directly without gas estimation
+                const result = await contract.methods.grantRole(DEFAULT_ADMIN_ROLE, inputAddress).send({
+                    from: userAccount
                 });
 
                 console.log('Grant admin transaction result:', result);
-                
-                showStatus(`✅ Successfully granted admin role to ${address}!`, 'success');
+        
+                showStatus(`✅ Successfully granted admin role to ${inputAddress}!`, 'success');
                 await loadAdmins();
-                
-                // Clear form ONLY if called from UI
-                if (fromUI) {
-                    document.getElementById('adminAddress').value = '';
-                }
-                
+        
+                // Clear form
+                document.getElementById('adminAddress').value = '';
+        
             } catch (error) {
                 console.error('Grant admin error:', error);
-                let errorMessage = 'Transaction failed';
-                
+        
                 if (error.code === 4001) {
-                    errorMessage = 'Transaction rejected by user';
-                } else if (error.message.includes('revert')) {
-                    // Try to extract the revert reason if possible
-                    const revertReason = error.message.match(/reason string: '(.+?)'/);
-                    errorMessage = revertReason ? `Contract rejected: ${revertReason[1]}` : 'Contract rejected the transaction';
-                } else if (error.message.includes("invalid address")) {
-                    errorMessage = 'Invalid Ethereum address provided';
-                } else if (error.message.includes("invalid BigNumber string")) {
-                    errorMessage = 'Invalid input format';
+                    showStatus('❌ Transaction rejected by user', 'error');
+                } else {
+                    showStatus(`❌ Grant admin failed: ${error.message}`, 'error');
                 }
-                
-                showStatus(`❌ Grant admin failed: ${errorMessage}`, 'error');
             }
         }
 
