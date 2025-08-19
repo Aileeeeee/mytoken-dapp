@@ -2948,7 +2948,7 @@
                 // Get decimals and calculate scaled amount
                 const decimals = await contract.methods.decimals().call();
                 const decimalPlaces = parseInt(decimals);
-                const scaledAmount = web3.utils.toBN(Math.floor(parseFloat(amount) * Math.pow(10, decimalPlaces)));
+                const scaledAmount = web3.utils.toBN(amount).mul(web3.utils.toBN(10).pow(web3.utils.toBN(decimalPlaces)));
 
                 console.log(`Minting ${amount} tokens (${scaledAmount.toString()} wei) to ${recipient}`);
 
