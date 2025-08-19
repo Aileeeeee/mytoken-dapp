@@ -966,13 +966,13 @@
                 </svg>
             </button>
             <div class="brand">
-                <div class="brand-icon">⚡</div>
+                <div class="brand-icon">🪙</div>
                 <span>TokenLab</span>
             </div>
         </div>
         <div class="navbar-right">
             <div class="balance-display" id="balanceDisplay" style="display: none;">
-                <span>💎</span>
+                <span>🪙</span>
                 <span id="tokenBalance">0.000</span>
             </div>
             <div class="profile-button" id="profileButton" style="display: none;">
@@ -1165,7 +1165,7 @@
         <!-- Dashboard Section -->
         <section id="dashboard" class="content-card function-section active">
             <div class="page-header">
-                <div class="page-title">🚀 Welcome To The ERC-20 Token Lab</div>
+                <div class="page-title">🪙 Welcome To The ERC-20 Token Lab</div>
             </div>
             <p class="page-subtitle">
                 Professional smart contract interface for token operations including minting, transfers, burning, and emergency controls. Built with industry-standard security practices.
@@ -2948,7 +2948,7 @@
                 // Get decimals and calculate scaled amount
                 const decimals = await contract.methods.decimals().call();
                 const decimalPlaces = parseInt(decimals);
-                const scaledAmount = web3.utils.toBN(Math.floor(parseFloat(amount) * Math.pow(10, decimalPlaces)));
+                const scaledAmount = const scaledAmount = web3.utils.toBN(amount).mul(web3.utils.toBN(10).pow(web3.utils.toBN(decimalPlaces)));
 
                 console.log(`Minting ${amount} tokens (${scaledAmount.toString()} wei) to ${recipient}`);
 
